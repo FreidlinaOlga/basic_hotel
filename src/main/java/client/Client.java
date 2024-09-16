@@ -1,6 +1,6 @@
-package guest;
+package client;
 
-public class Guest {
+public class Client {
     public static void main(String[] args) {
 
     }
