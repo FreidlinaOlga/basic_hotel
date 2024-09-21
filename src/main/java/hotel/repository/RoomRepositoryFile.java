@@ -1,16 +1,16 @@
 package hotel.repository;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hotel.domain.Room;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class RoomRepositoryFile implements Room_repository {
+public class RoomRepositoryFile implements RoomRepository {
     private File database;
     private ObjectMapper mapper;
     private long currentId;
@@ -41,6 +41,7 @@ public class RoomRepositoryFile implements Room_repository {
         List<Room> rooms = findAllRooms();
         room.setId(++currentId);
         room.setAvailable(true);
+        rooms.add(room);
         try {
             mapper.writeValue(database, rooms);
             return room;
@@ -86,4 +87,30 @@ public class RoomRepositoryFile implements Room_repository {
 
 
     }
+
+
+    @Override
+    public void restoreRoomById(long id) {
+        try {
+            // Читаем содержимое файла в объект типа List<Room>
+            List<Room> rooms = mapper.readValue(new File("room_db.txt"), new TypeReference<>() {});
+
+            // Находим комнату по ID и изменяем ее состояние
+            Room room = rooms.stream()
+                    .filter(r -> r.getId() == id)
+                    .findFirst()
+                    .orElse(null);
+
+            if (room != null && !room.isAvailable()) {
+                room.setAvailable(true); // Или другое действие для восстановления
+
+                // Записываем обновленный список комнат в файл
+            mapper.writeValue(new File("room_db.txt"), rooms);
+            }
+        } catch (IOException e) {
+            // Обработка исключения при чтении/записи файла
+            e.printStackTrace();
+        }
+    }
 }
+
